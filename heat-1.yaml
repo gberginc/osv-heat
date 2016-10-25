@@ -8,11 +8,15 @@ parameters:
         label: Image name or ID
         description: OSv image to be used for server
         default: 5b072f06-9941-4c06-a4c6-966bd6459c03
+        constraints:
+            - custom_constraint: glance.image
     flavor:
         type: string
         label: Flavor
         description: Flavor to be used for the server
         default: kvm.m1.small
+        constraints:
+            - custom_constraint: nova.flavor
     private_network: 
         type: string
         label: Private network name or ID
@@ -27,7 +31,7 @@ parameters:
         type: number
         label: Cluster size
         description: Number of OSv instances
-        default: 2
+        default: 1
     worker_processes:
         type: number
         label: Number of worker processes
