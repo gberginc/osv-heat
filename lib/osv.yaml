@@ -1,0 +1,60 @@
+heat_template_version: 2015-10-15
+
+description: Simple template to deploy a single compute instance
+
+parameters:
+    image:
+        type: string
+        label: Image name or ID
+        description: OSv image to be used for server
+        default: 5b072f06-9941-4c06-a4c6-966bd6459c03
+    flavor:
+        type: string
+        label: Flavor
+        description: Flavor to be used for the server
+        default: kvm.m1.small
+    private_network: 
+        type: string
+        label: Private network name or ID
+        description: Private network to attach server to.
+        default: private-9e4e502e9d804ed88baca5bda63217ad
+    user_data:
+        type: string
+        label: User data
+        description: User data to be pushed to the instance during instantiation
+    security_group:
+        type: string
+        label: Security group
+        description: Security group used by the VMs
+
+resources:
+    port:
+        type: OS::Neutron::Port
+        properties:
+            network: { get_param: private_network }
+            security_groups:
+                - { get_param: security_group }
+
+    instance:
+        type: OS::Nova::Server
+        properties:
+            image: { get_param: image }
+            flavor: { get_param: flavor }
+            networks:
+                - port: { get_resource: port }
+            user_data_format: RAW
+            user_data: { get_param: user_data }
+
+outputs:
+    instance:
+        description: OS::Nova::Server instance
+        value: { get_resource: instance }
+    name:
+        description: Name of the OSv instance
+        value: { get_attr: [instance, name] }
+    ip:
+        description: IP of the OSv instance
+        value: { get_attr: [instance, first_address] }
+    port:
+        description: The network port of OSv instance
+        value: { get_resource: port }

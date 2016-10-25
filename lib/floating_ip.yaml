@@ -1,0 +1,25 @@
+heat_template_version: 2015-10-15
+
+description: Template that assigns a floating IP address to a server.
+
+parameters:
+    server_id:
+        type: string
+        label: Server ID
+
+resources:
+    floating_ip:
+        type: OS::Nova::FloatingIP
+        properties:
+              pool: public
+            
+    floating_ip_assoc:
+        type: OS::Nova::FloatingIPAssociation
+        properties:
+            floating_ip: { get_resource: floating_ip }
+            server_id: { get_param: server_id }
+
+outputs:
+    ip:
+        description: Floating IP
+        value: { get_attr: [floating_ip, ip] }
