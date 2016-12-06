@@ -7,7 +7,7 @@ parameters:
         type: string
         label: Image name or ID
         description: OSv image to be used for server
-        default: 5b072f06-9941-4c06-a4c6-966bd6459c03
+        default: d5089e5e-438c-490a-bc31-fd808449b54b
         constraints:
             - custom_constraint: glance.image
     flavor:
@@ -67,7 +67,9 @@ resources:
                             - POST: /env/WM_PROJECT_DIR
                               val: /openfoam
                             - PUT: /app
-                              command: /usr/bin/mpirun -np $NP -x WM_PROJECT_DIR=/openfoam -x MPI_BUFFER_SIZE=20000000 -H localhost,$WORKERS --allow-run-as-root /usr/bin/simpleFoam.so -case /case -parallel
+                              command: /tools/mount-nfs.so nfs://10.254.1.27/export/?uid=0 /data
+                            - PUT: /app
+                              command: /usr/bin/mpirun -np $NP -x WM_PROJECT_DIR=/openfoam -x MPI_BUFFER_SIZE=20000000 -H localhost,$WORKERS --allow-run-as-root /usr/bin/simpleFoam.so -case /data/mik3d_1h-$NP -parallel
 
     osv_cluster:
         type: OS::Heat::ResourceGroup
@@ -84,6 +86,8 @@ resources:
                         run:
                             - POST: /env/WM_PROJECT_DIR
                               val: /openfoam
+                            - PUT: /app
+                              command: /tools/mount-nfs.so nfs://10.254.1.27/export/?uid=0 /data
 
     master_floating_ip:
         type: MIKE::OSv::FloatingIp
@@ -108,5 +112,5 @@ outputs:
                     $NP: { get_param: worker_processes }
                     $WORKERS: { list_join: [',', get_attr: [osv_cluster, ip]] }
                 template: |
-                    /usr/bin/mpirun -np $NP -x WM_PROJECT_DIR=/openfoam -x MPI_BUFFER_SIZE=20000000 -H localhost,$WORKERS --allow-run-as-root /usr/bin/simpleFoam.so -case /case -parallel
+                    /usr/bin/mpirun -np $NP -x WM_PROJECT_DIR=/openfoam -x MPI_BUFFER_SIZE=20000000 -H localhost,$WORKERS --allow-run-as-root /usr/bin/simpleFoam.so -case /data/mik3d_1h-$NP -parallel
 
